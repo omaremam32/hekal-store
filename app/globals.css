@@ -1,0 +1,41 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-display: "Bebas Neue", sans-serif;
+  --font-body: "Inter", sans-serif;
+  --font-tag: "IBM Plex Mono", monospace;
+  --font-arabic: "Cairo", sans-serif;
+}
+
+html[lang="ar"] body {
+  font-family: var(--font-arabic), var(--font-body);
+}
+
+html[lang="en"] body {
+  font-family: var(--font-body);
+}
+
+body {
+  background-color: #f1eee3;
+  color: #22282d;
+}
+
+::selection {
+  background-color: #a8762e;
+  color: #f1eee3;
+}
+
+:focus-visible {
+  outline: 2px solid #a8762e;
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
