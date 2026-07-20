@@ -1,117 +1,139 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import { motion } from "framer-motion";
 import { Search, SlidersHorizontal } from "lucide-react";
-import type { Product } from "@/lib/types";
-import ProductCard from "@/components/ProductCard";
-import EmptyState from "@/components/home/EmptyState";
 import { useLanguage } from "@/context/LanguageContext";
+import type { Product } from "@/lib/types";
 
 export default function ProductCatalog({ products }: { products: Product[] }) {
   const { locale } = useLanguage();
 
-  const [search, setSearch] = useState("");
-  const [activeLabel, setActiveLabel] = useState("All");
-  const [activeCategory, setActiveCategory] = useState("All");
-
-  const labels = useMemo(() => {
-    const uniqueLabels = Array.from(
-      new Set(products.map((product) => product.label_name_en).filter(Boolean))
-    );
-
-    return ["All", ...uniqueLabels];
-  }, [products]);
+  const [query, setQuery] = useState("");
+  const [activeCategory, setActiveCategory] = useState("all");
+  const [activeLabel, setActiveLabel] = useState("all");
 
   const categories = useMemo(() => {
-    const uniqueCategories = Array.from(
-      new Set(products.map((product) => product.category_en).filter(Boolean))
+    return Array.from(
+      new Set(
+        products
+          .map((product) => product.category_en)
+          .filter((category): category is string => Boolean(category))
+      )
     );
+  }, [products]);
 
-    return ["All", ...uniqueCategories];
+  const labels = useMemo(() => {
+    return Array.from(
+      new Set(
+        products
+          .map((product) => product.label_name_en)
+          .filter((label): label is string => Boolean(label))
+      )
+    );
   }, [products]);
 
   const filteredProducts = useMemo(() => {
-    const normalizedSearch = search.trim().toLowerCase();
+    const normalizedQuery = query.trim().toLowerCase();
 
     return products.filter((product) => {
-      const name = locale === "ar" ? product.name_ar : product.name_en;
-      const label = locale === "ar" ? product.label_name_ar : product.label_name_en;
-      const category = locale === "ar" ? product.category_ar : product.category_en;
-
-      const matchesSearch =
-        !normalizedSearch ||
-        name?.toLowerCase().includes(normalizedSearch) ||
-        label?.toLowerCase().includes(normalizedSearch) ||
-        category?.toLowerCase().includes(normalizedSearch);
+      const matchesCategory =
+        activeCategory === "all" || product.category_en === activeCategory;
 
       const matchesLabel =
-        activeLabel === "All" || product.label_name_en === activeLabel;
+        activeLabel === "all" || product.label_name_en === activeLabel;
 
-      const matchesCategory =
-        activeCategory === "All" || product.category_en === activeCategory;
+      const searchText = [
+        product.slug,
+        product.manufacturer_name,
+        product.label_name_en,
+        product.label_name_ar,
+        product.name_en,
+        product.name_ar,
+        product.description_en,
+        product.description_ar,
+        product.fabric_en,
+        product.fabric_ar,
+        product.category_en,
+        product.category_ar,
+        product.price_egp,
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
 
-      return matchesSearch && matchesLabel && matchesCategory;
+      const matchesQuery =
+        !normalizedQuery || searchText.includes(normalizedQuery);
+
+      return matchesCategory && matchesLabel && matchesQuery;
     });
-  }, [products, search, activeLabel, activeCategory, locale]);
+  }, [products, query, activeCategory, activeLabel]);
 
-  const getLabelText = (label: string) => {
-    if (label === "All") return locale === "ar" ? "الكل" : "All";
+  const getProductName = (product: Product) =>
+    locale === "ar" ? product.name_ar : product.name_en;
 
-    if (locale === "ar") {
-      const matchedProduct = products.find(
-        (product) => product.label_name_en === label
-      );
+  const getProductLabel = (product: Product) =>
+    locale === "ar" ? product.label_name_ar : product.label_name_en;
 
-      return matchedProduct?.label_name_ar || label;
-    }
+  const getProductCategory = (product: Product) =>
+    locale === "ar"
+      ? product.category_ar || product.category_en || ""
+      : product.category_en || product.category_ar || "";
 
-    return label;
-  };
+  const getProductFabric = (product: Product) =>
+    locale === "ar"
+      ? product.fabric_ar || product.fabric_en || ""
+      : product.fabric_en || product.fabric_ar || "";
 
   const getCategoryText = (category: string) => {
-    if (category === "All") return locale === "ar" ? "كل الأقسام" : "All categories";
+    const product = products.find((item) => item.category_en === category);
 
-    if (locale === "ar") {
-      const matchedProduct = products.find(
-        (product) => product.category_en === category
-      );
+    if (!product) return category;
 
-      return matchedProduct?.category_ar || category;
-    }
-
-    return category;
+    return locale === "ar"
+      ? product.category_ar || product.category_en || category
+      : product.category_en || product.category_ar || category;
   };
 
+  const getLabelText = (label: string) => {
+    const product = products.find((item) => item.label_name_en === label);
+
+    if (!product) return label;
+
+    return locale === "ar"
+      ? product.label_name_ar || product.label_name_en || label
+      : product.label_name_en || product.label_name_ar || label;
+  };
+
+  const clearFilters = () => {
+    setQuery("");
+    setActiveCategory("all");
+    setActiveLabel("all");
+  };
+
+  const hasFilters =
+    query.trim() || activeCategory !== "all" || activeLabel !== "all";
+
   return (
-    <section className="mx-auto max-w-6xl px-5 py-14">
-      <motion.div
-        initial={{ opacity: 0, y: 24 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-        className="mb-10"
-      >
+    <section className="mx-auto max-w-6xl px-5 py-10 sm:py-14">
+      <div className="mb-10">
         <p className="font-tag text-xs uppercase tracking-[0.28em] text-thread">
-          Hekal Collection
+          Hekal Store
         </p>
 
         <h1 className="mt-3 font-display text-5xl tracking-wide text-ink sm:text-6xl">
-          {locale === "ar" ? "المتجر" : "Shop"}
+          {locale === "ar" ? "المنتجات" : "Products"}
         </h1>
 
-        <p className="mt-4 max-w-2xl text-charcoal/70">
+        <p className="mt-3 max-w-2xl text-sm leading-6 text-charcoal/60">
           {locale === "ar"
-            ? "اكتشف قمصان هيكل من علامات مختلفة مثل كولفرت وهنت."
-            : "Explore Hekal shirts across labels like Colvert and Hunt."}
+            ? "اكتشف قمصان هيكل المصنوعة في مصر منذ عام 1970."
+            : "Discover Hekal-made shirts from Egypt since 1970."}
         </p>
-      </motion.div>
+      </div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 24 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.1, duration: 0.55 }}
-        className="rounded-3xl border border-ink/10 bg-bone p-5 shadow-sm"
-      >
+      <div className="rounded-[2rem] border border-ink/10 bg-bone p-5 shadow-sm">
         <div className="grid gap-4 lg:grid-cols-[1fr_auto] lg:items-center">
           <label className="relative block">
             <Search
@@ -120,12 +142,12 @@ export default function ProductCatalog({ products }: { products: Product[] }) {
             />
 
             <input
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
               placeholder={
                 locale === "ar"
-                  ? "ابحث عن قميص أو علامة..."
-                  : "Search shirts or labels..."
+                  ? "ابحث عن منتج أو لون أو خامة..."
+                  : "Search product, color, fabric, label..."
               }
               className="w-full rounded-full border border-ink/10 bg-white/60 py-4 pl-12 pr-5 text-sm text-ink outline-none transition focus:border-brass focus:ring-4 focus:ring-brass/10"
             />
@@ -133,74 +155,140 @@ export default function ProductCatalog({ products }: { products: Product[] }) {
 
           <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-charcoal/60">
             <SlidersHorizontal size={16} />
-            {locale === "ar" ? "فلترة" : "Filters"}
+            {locale === "ar" ? "الفلاتر" : "Filters"}
           </div>
         </div>
 
-        <div className="mt-5 space-y-4">
-          <FilterRow
-            title={locale === "ar" ? "العلامة" : "Label"}
-            items={labels}
-            activeItem={activeLabel}
-            onChange={setActiveLabel}
-            getText={getLabelText}
-          />
-
+        <div className="mt-5 grid gap-5">
           <FilterRow
             title={locale === "ar" ? "القسم" : "Category"}
             items={categories}
             activeItem={activeCategory}
             onChange={setActiveCategory}
             getText={getCategoryText}
+            allText={locale === "ar" ? "الكل" : "All"}
+          />
+
+          <FilterRow
+            title={locale === "ar" ? "العلامة" : "Label"}
+            items={labels}
+            activeItem={activeLabel}
+            onChange={setActiveLabel}
+            getText={getLabelText}
+            allText={locale === "ar" ? "الكل" : "All"}
           />
         </div>
-      </motion.div>
 
-      <div className="mt-8 flex items-center justify-between">
-        <p className="text-sm text-charcoal/60">
-          {locale === "ar"
-            ? `${filteredProducts.length} منتج`
-            : `${filteredProducts.length} products`}
-        </p>
+        <div className="mt-5 flex flex-col justify-between gap-3 border-t border-dashed border-ink/15 pt-4 sm:flex-row sm:items-center">
+          <p className="text-sm text-charcoal/60">
+            {locale === "ar" ? "عرض" : "Showing"}{" "}
+            <span className="font-bold text-ink">
+              {filteredProducts.length}
+            </span>{" "}
+            {locale === "ar" ? "من" : "of"}{" "}
+            <span className="font-bold text-ink">{products.length}</span>{" "}
+            {locale === "ar" ? "منتج" : "products"}
+          </p>
 
-        {(search || activeLabel !== "All" || activeCategory !== "All") && (
-          <button
-            type="button"
-            onClick={() => {
-              setSearch("");
-              setActiveLabel("All");
-              setActiveCategory("All");
-            }}
-            className="text-sm font-semibold text-thread transition hover:text-ink"
-          >
-            {locale === "ar" ? "مسح الفلاتر" : "Clear filters"}
-          </button>
-        )}
+          {hasFilters && (
+            <button
+              type="button"
+              onClick={clearFilters}
+              className="w-fit rounded-full border border-ink/15 px-4 py-2 text-xs font-bold uppercase tracking-[0.16em] text-ink transition hover:border-thread hover:text-thread"
+            >
+              {locale === "ar" ? "مسح الفلاتر" : "Clear filters"}
+            </button>
+          )}
+        </div>
       </div>
 
-      <motion.div
-        layout
-        className="mt-8 grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-4"
-      >
-        <AnimatePresence mode="popLayout">
-          {filteredProducts.map((product) => (
-            <motion.div
-              key={product.id}
-              layout
-              initial={{ opacity: 0, y: 24, scale: 0.96 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 20, scale: 0.96 }}
-              transition={{ duration: 0.3 }}
-            >
-              <ProductCard product={product} />
-            </motion.div>
-          ))}
-        </AnimatePresence>
-      </motion.div>
+      {filteredProducts.length === 0 ? (
+        <div className="mt-10 rounded-[2rem] border border-ink/10 bg-bone p-10 text-center shadow-sm">
+          <h2 className="text-2xl font-bold text-ink">
+            {locale === "ar" ? "لا توجد منتجات" : "No products found"}
+          </h2>
 
-      {filteredProducts.length === 0 && (
-        <div className="mt-12">
-          <EmptyState />
+          <p className="mt-2 text-sm text-charcoal/60">
+            {locale === "ar"
+              ? "جرب تغيير البحث أو الفلاتر."
+              : "Try changing the search or filters."}
+          </p>
+        </div>
+      ) : (
+        <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {filteredProducts.map((product, index) => {
+            const name = getProductName(product);
+            const label = getProductLabel(product);
+            const category = getProductCategory(product);
+            const fabric = getProductFabric(product);
+
+            return (
+              <motion.article
+                key={product.id}
+                initial={{ opacity: 0, y: 18 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.04 }}
+                className="group overflow-hidden rounded-[2rem] border border-ink/10 bg-bone shadow-sm transition hover:-translate-y-1 hover:border-thread hover:shadow-xl"
+              >
+                <Link href={`/products/${product.slug}`} className="block">
+                  <div className="aspect-[4/5] overflow-hidden bg-seam">
+                    {product.image_url ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={product.image_url}
+                        alt={name}
+                        className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
+                      />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center text-center font-tag text-xs uppercase tracking-[0.2em] text-ink/40">
+                        {label}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="p-5">
+                    <div className="mb-3 flex items-center justify-between gap-3">
+                      <p className="font-tag text-xs uppercase tracking-[0.22em] text-thread">
+                        {label}
+                      </p>
+
+                      {category && (
+                        <span className="rounded-full bg-seam px-3 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-ink">
+                          {category}
+                        </span>
+                      )}
+                    </div>
+
+                    <h2 className="line-clamp-2 text-xl font-bold text-ink">
+                      {name}
+                    </h2>
+
+                    {fabric && (
+                      <p className="mt-2 text-sm text-charcoal/60">{fabric}</p>
+                    )}
+
+                    <div className="mt-5 flex items-end justify-between gap-4">
+                      <div>
+                        {product.compare_at_price_egp && (
+                          <p className="text-sm text-charcoal/40 line-through">
+                            {product.compare_at_price_egp.toFixed(0)} EGP
+                          </p>
+                        )}
+
+                        <p className="font-mono text-xl font-bold text-ink">
+                          {product.price_egp.toFixed(0)} EGP
+                        </p>
+                      </div>
+
+                      <span className="rounded-full bg-ink px-4 py-2 text-xs font-bold uppercase tracking-[0.16em] text-bone transition group-hover:bg-thread">
+                        {locale === "ar" ? "عرض" : "View"}
+                      </span>
+                    </div>
+                  </div>
+                </Link>
+              </motion.article>
+            );
+          })}
         </div>
       )}
     </section>
@@ -213,12 +301,14 @@ function FilterRow({
   activeItem,
   onChange,
   getText,
+  allText,
 }: {
   title: string;
   items: string[];
   activeItem: string;
-  onChange: (item: string) => void;
-  getText: (item: string) => string;
+  onChange: (value: string) => void;
+  getText: (value: string) => string;
+  allText: string;
 }) {
   return (
     <div>
@@ -227,33 +317,45 @@ function FilterRow({
       </p>
 
       <div className="flex flex-wrap gap-2">
-        {items.map((item) => {
-          const active = activeItem === item;
+        <FilterPill
+          label={allText}
+          active={activeItem === "all"}
+          onClick={() => onChange("all")}
+        />
 
-          return (
-            <button
-              key={item}
-              type="button"
-              onClick={() => onChange(item)}
-              className={`relative overflow-hidden rounded-full border px-4 py-2 text-xs font-bold uppercase tracking-[0.14em] transition ${
-                active
-                  ? "border-ink text-bone"
-                  : "border-ink/15 text-ink hover:border-brass hover:text-brass"
-              }`}
-            >
-              {active && (
-                <motion.span
-                  layoutId={`${title}-filter-pill`}
-                  className="absolute inset-0 rounded-full bg-ink"
-                  transition={{ type: "spring", stiffness: 420, damping: 32 }}
-                />
-              )}
-
-              <span className="relative z-10">{getText(item)}</span>
-            </button>
-          );
-        })}
+        {items.map((item) => (
+          <FilterPill
+            key={item}
+            label={getText(item)}
+            active={activeItem === item}
+            onClick={() => onChange(item)}
+          />
+        ))}
       </div>
     </div>
+  );
+}
+
+function FilterPill({
+  label,
+  active,
+  onClick,
+}: {
+  label: string;
+  active: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`rounded-full border px-4 py-2 text-xs font-bold uppercase tracking-[0.14em] transition ${
+        active
+          ? "border-ink bg-ink text-bone"
+          : "border-ink/15 text-ink hover:border-brass hover:text-brass"
+      }`}
+    >
+      {label}
+    </button>
   );
 }
