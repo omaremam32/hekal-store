@@ -6,7 +6,7 @@ interface OrderRequestBody {
   customer: {
     name: string;
     phone: string;
-    email: string;
+    email?: string;
     address: string;
     city: string;
     governorate: string;
@@ -16,40 +16,68 @@ interface OrderRequestBody {
 
 export async function POST(request: Request) {
   let body: OrderRequestBody;
+
   try {
     body = await request.json();
   } catch {
-    return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Invalid request body" },
+      { status: 400 }
+    );
   }
 
   const { customer, items } = body;
 
-  if (!customer?.name || !customer?.phone || !customer?.address || !customer?.city || !customer?.governorate) {
-    return NextResponse.json({ error: "Missing required customer fields" }, { status: 400 });
+  const name = customer?.name?.trim();
+  const phone = customer?.phone?.trim();
+  const email = customer?.email?.trim() || null;
+  const address = customer?.address?.trim();
+  const city = customer?.city?.trim();
+  const governorate = customer?.governorate?.trim();
+
+  if (!name || !phone || !address || !city || !governorate) {
+    return NextResponse.json(
+      { error: "Missing required customer fields" },
+      { status: 400 }
+    );
   }
+
   if (!Array.isArray(items) || items.length === 0) {
     return NextResponse.json({ error: "Cart is empty" }, { status: 400 });
   }
 
-  const rpcItems = items.map((item) => ({
-    variant_id: item.variantId,
-    quantity: item.quantity,
-  }));
+  const validItems = items
+    .filter((item) => item.variantId && Number(item.quantity) > 0)
+    .map((item) => ({
+      variant_id: item.variantId,
+      quantity: Math.floor(Number(item.quantity)),
+    }));
+
+  if (validItems.length === 0) {
+    return NextResponse.json(
+      { error: "Cart does not contain valid items" },
+      { status: 400 }
+    );
+  }
 
   const { data, error } = await supabaseServer.rpc("create_order", {
-    p_customer_name: customer.name,
-    p_phone: customer.phone,
-    p_email: customer.email || null,
-    p_address: customer.address,
-    p_city: customer.city,
-    p_governorate: customer.governorate,
-    p_items: rpcItems,
+    p_customer_name: name,
+    p_phone: phone,
+    p_email: email,
+    p_address: address,
+    p_city: city,
+    p_governorate: governorate,
+    p_items: validItems,
   });
 
   if (error) {
-    // Stock/variant errors raised from the SQL function surface here
-    return NextResponse.json({ error: error.message }, { status: 400 });
+    return NextResponse.json(
+      { error: error.message || "Order could not be created" },
+      { status: 400 }
+    );
   }
 
-  return NextResponse.json({ orderId: data });
+  return NextResponse.json({
+    orderId: data,
+  });
 }

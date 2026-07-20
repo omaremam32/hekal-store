@@ -1,34 +1,29 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { useCart } from "@/context/CartContext";
+import { useEffect, useMemo, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import { CheckCircle2, PackageCheck, ShoppingBag } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
-import type { Product } from "@/lib/types";
+import { useCart } from "@/context/CartContext";
+import type { Product, ProductVariant } from "@/lib/types";
 
-export default function ProductDetail({ product }: { product: Product }) {
-  const { t, locale } = useLanguage();
+interface ProductDetailProps {
+  product: Product;
+  variants?: ProductVariant[];
+}
+
+export default function ProductDetail({
+  product,
+  variants = [],
+}: ProductDetailProps) {
+  const { locale } = useLanguage();
   const { addLine } = useCart();
 
-  const [selectedSize, setSelectedSize] = useState<string | null>(null);
-  const [selectedColor, setSelectedColor] = useState<string | null>(null);
+  const [selectedSize, setSelectedSize] = useState("");
+  const [selectedColor, setSelectedColor] = useState("");
   const [added, setAdded] = useState(false);
 
-  const variants = product.product_variants ?? [];
-
-  const sizes = useMemo(() => {
-    return Array.from(new Set(variants.map((variant) => variant.size))).sort(
-      (a, b) => Number(a) - Number(b)
-    );
-  }, [variants]);
-
-  const colorsForSize = useMemo(() => {
-    return variants.filter((variant) => variant.size === selectedSize);
-  }, [variants, selectedSize]);
-
-  const selectedVariant = variants.find(
-    (variant) =>
-      variant.size === selectedSize && variant.color_en === selectedColor
-  );
+  const safeVariants = Array.isArray(variants) ? variants : [];
 
   const name = locale === "ar" ? product.name_ar : product.name_en;
   const description =
@@ -36,166 +31,360 @@ export default function ProductDetail({ product }: { product: Product }) {
   const fabric = locale === "ar" ? product.fabric_ar : product.fabric_en;
   const label = locale === "ar" ? product.label_name_ar : product.label_name_en;
 
-  const manufacturerLine =
-    locale === "ar"
-      ? `من تصنيع ${product.manufacturer_name}`
-      : `Manufactured by ${product.manufacturer_name}`;
+  const availableVariants = useMemo(() => {
+    return safeVariants.filter((variant) => Number(variant.stock) > 0);
+  }, [safeVariants]);
+
+  const sizes = useMemo(() => {
+    return Array.from(
+      new Set(availableVariants.map((variant) => variant.size))
+    ).sort((a, b) => Number(a) - Number(b));
+  }, [availableVariants]);
+
+  const colorsForSelectedSize = useMemo(() => {
+    if (!selectedSize) return [];
+
+    const matchedVariants = availableVariants.filter(
+      (variant) => variant.size === selectedSize
+    );
+
+    const uniqueColors = new Map<string, ProductVariant>();
+
+    matchedVariants.forEach((variant) => {
+      const key = `${variant.color_en}-${variant.color_ar}`;
+
+      if (!uniqueColors.has(key)) {
+        uniqueColors.set(key, variant);
+      }
+    });
+
+    return Array.from(uniqueColors.values());
+  }, [availableVariants, selectedSize]);
+
+  const selectedVariant = useMemo(() => {
+    return availableVariants.find(
+      (variant) =>
+        variant.size === selectedSize && variant.color_en === selectedColor
+    );
+  }, [availableVariants, selectedSize, selectedColor]);
+
+  useEffect(() => {
+    if (colorsForSelectedSize.length === 1) {
+      setSelectedColor(colorsForSelectedSize[0].color_en);
+    }
+
+    if (
+      colorsForSelectedSize.length > 1 &&
+      !colorsForSelectedSize.some(
+        (variant) => variant.color_en === selectedColor
+      )
+    ) {
+      setSelectedColor("");
+    }
+  }, [colorsForSelectedSize, selectedColor]);
 
   const handleAdd = () => {
-    if (!selectedVariant || selectedVariant.stock <= 0) return;
+    if (!selectedVariant) return;
 
     addLine({
       productId: product.id,
       variantId: selectedVariant.id,
       slug: product.slug,
+
       nameEn: product.name_en,
       nameAr: product.name_ar,
+
       labelNameEn: product.label_name_en,
       labelNameAr: product.label_name_ar,
       manufacturerName: product.manufacturer_name,
+
+      imageUrl: product.image_url,
+
       size: selectedVariant.size,
       colorEn: selectedVariant.color_en,
       colorAr: selectedVariant.color_ar,
+
       unitPrice: product.price_egp,
       quantity: 1,
     });
 
     setAdded(true);
-    setTimeout(() => setAdded(false), 2000);
+
+    window.setTimeout(() => {
+      setAdded(false);
+    }, 1800);
   };
 
+  const isSoldOut = availableVariants.length === 0;
+
   return (
-    <section className="mx-auto grid max-w-7xl gap-10 px-4 py-10 sm:px-6 lg:grid-cols-2 lg:px-8 lg:py-16">
-      <div className="overflow-hidden rounded-3xl border border-ink/10 bg-bone shadow-sm">
-        {product.image_url ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={product.image_url}
-            alt={`${label} ${name}`}
-            className="h-full w-full object-cover"
-          />
-        ) : (
-          <div className="flex aspect-[4/5] items-center justify-center text-5xl font-display uppercase tracking-[0.25em] text-ink/20">
-            Hekal
+    <main className="mx-auto max-w-6xl px-5 py-10 sm:py-14">
+      <div className="grid gap-10 lg:grid-cols-[1.05fr_0.95fr] lg:items-start">
+        <motion.div
+          initial={{ opacity: 0, x: -32 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
+          className="relative overflow-hidden rounded-[2rem] border border-ink/10 bg-seam"
+        >
+          <div className="absolute left-5 top-5 z-10 rounded-full bg-bone/90 px-4 py-2 font-tag text-xs uppercase tracking-[0.22em] text-thread backdrop-blur">
+            {label}
           </div>
-        )}
-      </div>
 
-      <div className="flex flex-col justify-center">
-        <p className="font-tag text-sm uppercase tracking-[0.25em] text-thread">
-          {label}
-        </p>
+          {product.image_url ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <motion.img
+              src={product.image_url}
+              alt={name}
+              initial={{ scale: 1.06 }}
+              animate={{ scale: 1 }}
+              transition={{ duration: 1.1, ease: [0.22, 1, 0.36, 1] }}
+              className="aspect-[4/5] w-full object-cover"
+            />
+          ) : (
+            <div className="flex aspect-[4/5] w-full items-center justify-center text-center font-display text-5xl tracking-wide text-ink/30">
+              Hekal
+            </div>
+          )}
+        </motion.div>
 
-        <h1 className="mt-3 text-4xl font-bold tracking-tight text-ink md:text-6xl">
-          {name}
-        </h1>
-
-        <p className="mt-3 text-base font-medium text-charcoal/70">
-          {manufacturerLine}
-        </p>
-
-        {fabric && (
-          <p className="mt-5 inline-flex w-fit rounded-full border border-ink/10 px-4 py-2 text-sm text-charcoal">
-            {t.product.fabric}: {fabric}
+        <motion.section
+          initial={{ opacity: 0, x: 32 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
+          className="lg:sticky lg:top-28"
+        >
+          <p className="font-tag text-xs uppercase tracking-[0.28em] text-thread">
+            {product.manufacturer_name}
           </p>
-        )}
 
-        <div className="mt-6 flex items-end gap-4">
-          <p className="text-3xl font-bold text-ink">
-            {product.price_egp.toFixed(0)} EGP
-          </p>
-          {product.compare_at_price_egp && (
-            <p className="pb-1 text-lg text-charcoal/50 line-through">
-              {product.compare_at_price_egp.toFixed(0)} EGP
+          <h1 className="mt-3 font-display text-5xl tracking-wide text-ink sm:text-6xl">
+            {name}
+          </h1>
+
+          {description && (
+            <p className="mt-5 max-w-xl font-body leading-8 text-charcoal/70">
+              {description}
             </p>
           )}
-        </div>
 
-        {description && (
-          <p className="mt-6 max-w-xl leading-8 text-charcoal/80">
-            {description}
-          </p>
-        )}
+          <div className="mt-6 flex flex-wrap items-center gap-3">
+            <p className="font-mono text-2xl font-bold text-ink">
+              {product.price_egp.toFixed(0)} EGP
+            </p>
 
-        <div className="mt-8 space-y-6">
-          <div>
-            <p className="mb-3 font-semibold text-ink">{t.product.size}</p>
-            <div className="flex flex-wrap gap-3">
-              {sizes.map((size) => (
-                <button
-                  key={size}
-                  type="button"
-                  onClick={() => {
-                    setSelectedSize(size);
-                    setSelectedColor(null);
-                  }}
-                  className={`rounded-full border px-5 py-2 font-tag text-sm transition ${
-                    selectedSize === size
-                      ? "border-ink bg-ink text-bone"
-                      : "border-ink/20 bg-bone text-ink hover:border-ink"
-                  }`}
-                >
-                  {size}
-                </button>
-              ))}
-            </div>
+            {product.compare_at_price_egp && (
+              <p className="font-mono text-sm text-charcoal/40 line-through">
+                {product.compare_at_price_egp.toFixed(0)} EGP
+              </p>
+            )}
           </div>
 
-          {selectedSize && (
-            <div>
-              <p className="mb-3 font-semibold text-ink">{t.product.color}</p>
-              <div className="flex flex-wrap gap-3">
-                {colorsForSize.map((variant) => {
-                  const colorLabel =
-                    locale === "ar" ? variant.color_ar : variant.color_en;
-                  const disabled = variant.stock <= 0;
+          {fabric && (
+            <div className="mt-6 rounded-2xl border border-ink/10 bg-bone p-4">
+              <p className="font-tag text-xs uppercase tracking-[0.22em] text-thread">
+                {locale === "ar" ? "الخامة" : "Fabric"}
+              </p>
 
-                  return (
-                    <button
-                      key={variant.id}
-                      type="button"
-                      disabled={disabled}
-                      onClick={() => setSelectedColor(variant.color_en)}
-                      className={`rounded-full border px-5 py-2 font-tag text-sm transition ${
-                        disabled
-                          ? "cursor-not-allowed border-ink/10 bg-seam text-charcoal/30"
-                          : selectedColor === variant.color_en
-                            ? "border-ink bg-ink text-bone"
-                            : "border-ink/20 bg-bone text-ink hover:border-ink"
-                      }`}
-                    >
-                      {colorLabel}
-                    </button>
-                  );
-                })}
+              <p className="mt-1 font-body text-sm text-charcoal/70">
+                {fabric}
+              </p>
+            </div>
+          )}
+
+          <div className="mt-8 space-y-7">
+            <div>
+              <div className="mb-3 flex items-center justify-between">
+                <p className="font-tag text-xs uppercase tracking-[0.22em] text-thread">
+                  {locale === "ar" ? "اختر المقاس" : "Choose size"}
+                </p>
+
+                {selectedSize && (
+                  <motion.p
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="text-xs font-semibold text-charcoal/60"
+                  >
+                    {locale === "ar" ? "المقاس" : "Size"} {selectedSize}
+                  </motion.p>
+                )}
+              </div>
+
+              {isSoldOut ? (
+                <p className="rounded-2xl border border-thread/20 bg-thread/10 px-4 py-3 text-sm text-thread">
+                  {locale === "ar"
+                    ? "هذا المنتج غير متوفر حالياً."
+                    : "This product is currently sold out."}
+                </p>
+              ) : (
+                <div className="flex flex-wrap gap-2">
+                  {sizes.map((size) => {
+                    const active = selectedSize === size;
+
+                    return (
+                      <button
+                        key={size}
+                        type="button"
+                        onClick={() => {
+                          setSelectedSize(size);
+                          setSelectedColor("");
+                        }}
+                        className={`relative h-12 min-w-12 overflow-hidden rounded-full border px-4 font-mono text-sm font-bold transition ${
+                          active
+                            ? "border-ink text-bone"
+                            : "border-ink/15 text-ink hover:border-brass hover:text-brass"
+                        }`}
+                      >
+                        {active && (
+                          <motion.span
+                            layoutId="selected-size-pill"
+                            className="absolute inset-0 rounded-full bg-ink"
+                            transition={{
+                              type: "spring",
+                              stiffness: 420,
+                              damping: 32,
+                            }}
+                          />
+                        )}
+
+                        <span className="relative z-10">{size}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            <AnimatePresence>
+              {selectedSize && colorsForSelectedSize.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 18 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -12 }}
+                  transition={{ duration: 0.28 }}
+                >
+                  <div className="mb-3 flex items-center justify-between">
+                    <p className="font-tag text-xs uppercase tracking-[0.22em] text-thread">
+                      {locale === "ar" ? "اختر اللون" : "Choose color"}
+                    </p>
+
+                    {selectedVariant && (
+                      <motion.p
+                        initial={{ opacity: 0, y: 6 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="text-xs font-semibold text-charcoal/60"
+                      >
+                        {locale === "ar"
+                          ? selectedVariant.color_ar
+                          : selectedVariant.color_en}
+                      </motion.p>
+                    )}
+                  </div>
+
+                  <div className="flex flex-wrap gap-2">
+                    {colorsForSelectedSize.map((variant) => {
+                      const colorText =
+                        locale === "ar" ? variant.color_ar : variant.color_en;
+                      const active = selectedColor === variant.color_en;
+
+                      return (
+                        <button
+                          key={variant.id}
+                          type="button"
+                          onClick={() => setSelectedColor(variant.color_en)}
+                          className={`relative overflow-hidden rounded-full border px-5 py-3 text-xs font-bold uppercase tracking-[0.16em] transition ${
+                            active
+                              ? "border-thread text-bone"
+                              : "border-ink/15 text-ink hover:border-thread hover:text-thread"
+                          }`}
+                        >
+                          {active && (
+                            <motion.span
+                              layoutId="selected-color-pill"
+                              className="absolute inset-0 rounded-full bg-thread"
+                              transition={{
+                                type: "spring",
+                                stiffness: 420,
+                                damping: 32,
+                              }}
+                            />
+                          )}
+
+                          <span className="relative z-10">{colorText}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            <div className="rounded-3xl border border-ink/10 bg-bone p-5 shadow-sm">
+              <div className="flex items-start gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-seam text-ink">
+                  <PackageCheck size={20} />
+                </div>
+
+                <div>
+                  <p className="font-semibold text-ink">
+                    {locale === "ar"
+                      ? "تصنيع هيكل منذ 1970"
+                      : "Manufactured by Hekal since 1970"}
+                  </p>
+
+                  <p className="mt-1 text-sm leading-6 text-charcoal/60">
+                    {locale === "ar"
+                      ? "منتج أصلي من المصنع الرئيسي، مع اختلاف أسماء العلامات حسب خط الإنتاج."
+                      : "Original product from the main factory, with label names depending on the production line."}
+                  </p>
+                </div>
               </div>
             </div>
-          )}
 
-          {selectedVariant && (
-            <p className="text-sm text-charcoal/70">
-              {selectedVariant.stock > 0
-                ? t.product.inStock(selectedVariant.stock)
-                : t.product.outOfStock}
-            </p>
-          )}
-
-          <button
-            type="button"
-            onClick={handleAdd}
-            disabled={!selectedVariant || selectedVariant.stock <= 0}
-            className="w-full rounded-full bg-ink px-8 py-4 text-sm font-bold uppercase tracking-[0.22em] text-bone transition hover:bg-thread disabled:cursor-not-allowed disabled:bg-charcoal/30"
-          >
-            {added
-              ? t.product.added
-              : !selectedSize || !selectedColor
-                ? t.product.selectOptions
-                : selectedVariant && selectedVariant.stock <= 0
-                  ? t.product.outOfStock
-                  : t.product.addToCart}
-          </button>
-        </div>
+            <motion.button
+              type="button"
+              onClick={handleAdd}
+              disabled={!selectedVariant || isSoldOut}
+              whileHover={
+                selectedVariant && !isSoldOut
+                  ? { y: -3, scale: 1.01 }
+                  : undefined
+              }
+              whileTap={
+                selectedVariant && !isSoldOut ? { scale: 0.97 } : undefined
+              }
+              className="relative flex w-full items-center justify-center gap-2 overflow-hidden rounded-full bg-thread px-6 py-4 font-mono text-sm uppercase tracking-[0.22em] text-bone shadow-lg transition hover:bg-ink disabled:cursor-not-allowed disabled:bg-charcoal/30"
+            >
+              <AnimatePresence mode="wait">
+                {added ? (
+                  <motion.span
+                    key="added"
+                    initial={{ opacity: 0, y: 18 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -18 }}
+                    transition={{ duration: 0.22 }}
+                    className="flex items-center gap-2"
+                  >
+                    <CheckCircle2 size={18} />
+                    {locale === "ar" ? "تمت الإضافة" : "Added to cart"}
+                  </motion.span>
+                ) : (
+                  <motion.span
+                    key="add"
+                    initial={{ opacity: 0, y: 18 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -18 }}
+                    transition={{ duration: 0.22 }}
+                    className="flex items-center gap-2"
+                  >
+                    <ShoppingBag size={18} />
+                    {locale === "ar" ? "أضف إلى السلة" : "Add to cart"}
+                  </motion.span>
+                )}
+              </AnimatePresence>
+            </motion.button>
+          </div>
+        </motion.section>
       </div>
-    </section>
+    </main>
   );
 }

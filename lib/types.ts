@@ -1,18 +1,13 @@
 export type Locale = "en" | "ar";
 
-export interface ProductVariant {
-  id: string;
-  product_id: string;
-  size: string;
-  color_en: string;
-  color_ar: string;
-  sku?: string | null;
-  stock: number;
-}
-
 export interface Product {
   id: string;
   slug: string;
+
+  manufacturer_name: string;
+
+  label_name_en: string;
+  label_name_ar: string;
 
   name_en: string;
   name_ar: string;
@@ -28,17 +23,28 @@ export interface Product {
 
   image_url: string | null;
 
-  manufacturer_name: string;
-  label_name_en: string;
-  label_name_ar: string;
+  category_en: string | null;
+  category_ar: string | null;
 
-  category_en?: string | null;
-  category_ar?: string | null;
-
-  featured?: boolean;
+  featured: boolean;
   is_active: boolean;
 
-  product_variants?: ProductVariant[];
+  created_at: string;
+}
+
+export interface ProductVariant {
+  id: string;
+  product_id: string;
+
+  size: string;
+
+  color_en: string;
+  color_ar: string;
+
+  sku: string | null;
+  stock: number;
+
+  created_at?: string;
 }
 
 export interface CartLine {
@@ -49,9 +55,11 @@ export interface CartLine {
   nameEn: string;
   nameAr: string;
 
-  labelNameEn?: string;
-  labelNameAr?: string;
-  manufacturerName?: string;
+  labelNameEn: string;
+  labelNameAr: string;
+  manufacturerName: string;
+
+  imageUrl: string | null;
 
   size: string;
   colorEn: string;
