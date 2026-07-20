@@ -1,3 +1,19 @@
+html {
+  scroll-behavior: smooth;
+}
+
+::selection {
+  background: #c7a15a;
+  color: #111111;
+}
+
+body {
+  overflow-x: hidden;
+}
+
+img {
+  user-select: none;
+}
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Bebas_Neue, Inter, IBM_Plex_Mono, Cairo } from "next/font/google";
+import { Bebas_Neue, Cairo, IBM_Plex_Mono, Inter } from "next/font/google";
 import "./globals.css";
 import Providers from "@/components/Providers";
 import Navbar from "@/components/Navbar";
@@ -11,13 +11,20 @@ const bebasNeue = Bebas_Neue({
   variable: "--font-display",
   display: "swap",
 });
-const inter = Inter({ subsets: ["latin"], variable: "--font-body", display: "swap" });
+
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-body",
+  display: "swap",
+});
+
 const plexMono = IBM_Plex_Mono({
   weight: ["400", "500"],
   subsets: ["latin"],
   variable: "--font-tag",
   display: "swap",
 });
+
 const cairo = Cairo({
   weight: ["400", "600", "700"],
   subsets: ["arabic", "latin"],
@@ -28,16 +35,18 @@ const cairo = Cairo({
 export const metadata: Metadata = {
   title: "Hekal — Men's Shirts Since 1970",
   description:
-    "Hekal has made men's shirts in Imbaba, Egypt since 1970 — Oxford, poplin, linen and flannel, cut and finished in-house.",
+    "Shop men's shirts made by Hekal, the Egyptian shirt factory established in 1970. Discover Colvert and other Hekal-made labels.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ar" dir="rtl" className={`${bebasNeue.variable} ${inter.variable} ${plexMono.variable} ${cairo.variable}`}>
-      <body className="min-h-screen flex flex-col">
+    <html lang="ar" dir="rtl" suppressHydrationWarning>
+      <body
+        className={`${bebasNeue.variable} ${inter.variable} ${plexMono.variable} ${cairo.variable} min-h-screen bg-bone font-body text-charcoal antialiased`}
+      >
         <Providers>
           <Navbar />
-          <main className="flex-1">{children}</main>
+          <main>{children}</main>
           <Footer />
         </Providers>
       </body>
