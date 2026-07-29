@@ -104,13 +104,16 @@ const ar: Dictionary = {
     description: "أكمل بيانات الطلب وسنتواصل معك.",
     customerInfo: "بيانات العميل",
     contactInfo: "بيانات التواصل",
+
     name: "الاسم بالكامل",
     fullName: "الاسم بالكامل",
     phone: "رقم الهاتف",
+    email: "البريد الإلكتروني",
     emailOptional: "البريد الإلكتروني اختياري",
     address: "العنوان",
     city: "المدينة",
     governorate: "المحافظة",
+
     placeOrder: "تأكيد الطلب",
     placingOrder: "جاري تأكيد الطلب",
     orderSummary: "ملخص الطلب",

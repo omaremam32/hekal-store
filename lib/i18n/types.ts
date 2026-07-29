@@ -100,13 +100,16 @@ export interface Dictionary {
     description: string;
     customerInfo: string;
     contactInfo: string;
+
     name: string;
     fullName: string;
     phone: string;
+    email: string;
     emailOptional: string;
     address: string;
     city: string;
     governorate: string;
+
     placeOrder: string;
     placingOrder: string;
     orderSummary: string;
