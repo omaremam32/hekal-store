@@ -121,6 +121,18 @@ const en: Dictionary = {
     orderSummary: "Order summary",
   },
 
+  checkoutSuccess: {
+    title: "Order confirmed",
+    description:
+      "Thank you for your order. Hekal will contact you soon to confirm the details.",
+    orderReference: "Order reference",
+    orderNumber: "Order number",
+    confirmation: "Your order has been received successfully.",
+    continueShopping: "Continue shopping",
+    backHome: "Back home",
+    viewProducts: "View products",
+  },
+
   admin: {
     title: "Hekal Admin System",
     dashboardDescription:

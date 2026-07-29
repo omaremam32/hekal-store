@@ -1,4 +1,6 @@
 export interface Dictionary {
+  [key: string]: any;
+
   brand: string;
   tagline: string;
 
@@ -102,7 +104,6 @@ export interface Dictionary {
 
   checkout: {
     [key: string]: string;
-
     title: string;
     description: string;
     customerInfo: string;
@@ -121,6 +122,18 @@ export interface Dictionary {
     placeOrder: string;
     placingOrder: string;
     orderSummary: string;
+  };
+
+  checkoutSuccess: {
+    [key: string]: string;
+    title: string;
+    description: string;
+    orderReference: string;
+    orderNumber: string;
+    confirmation: string;
+    continueShopping: string;
+    backHome: string;
+    viewProducts: string;
   };
 
   admin: {

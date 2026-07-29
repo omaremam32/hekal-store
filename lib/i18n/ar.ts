@@ -120,6 +120,18 @@ const ar: Dictionary = {
     orderSummary: "ملخص الطلب",
   },
 
+  checkoutSuccess: {
+    title: "تم تأكيد الطلب",
+    description:
+      "شكراً لطلبك. سيتواصل معك فريق هيكل قريباً لتأكيد تفاصيل الطلب.",
+    orderReference: "رقم مرجع الطلب",
+    orderNumber: "رقم الطلب",
+    confirmation: "تم استلام طلبك بنجاح.",
+    continueShopping: "متابعة التسوق",
+    backHome: "العودة للرئيسية",
+    viewProducts: "عرض المنتجات",
+  },
+
   admin: {
     title: "نظام إدارة هيكل",
     dashboardDescription:
