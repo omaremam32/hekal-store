@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import type { ReactNode } from "react";
 import { Bebas_Neue, Cairo, IBM_Plex_Mono, Inter } from "next/font/google";
 import "./globals.css";
 import Providers from "@/components/Providers";
@@ -42,7 +43,7 @@ export const metadata: Metadata = {
 export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
   return (
     <html lang="ar" dir="rtl" suppressHydrationWarning>
