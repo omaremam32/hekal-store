@@ -100,6 +100,7 @@ export interface Dictionary {
     description: string;
     customerInfo: string;
     contactInfo: string;
+    name: string;
     fullName: string;
     phone: string;
     emailOptional: string;
