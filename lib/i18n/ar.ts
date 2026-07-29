@@ -39,7 +39,7 @@ const ar: Dictionary = {
     pending: "قيد الانتظار",
     confirmed: "تم التأكيد",
     shipped: "تم الشحن",
-    delivered: "تم الشحن",
+    delivered: "تم التسليم",
     cancelled: "ملغي",
 
     total: "الإجمالي",
@@ -92,6 +92,11 @@ const ar: Dictionary = {
     continueShopping: "متابعة التسوق",
     subtotal: "المجموع الفرعي",
     checkout: "إتمام الطلب",
+    remove: "حذف",
+    decrease: "تقليل الكمية",
+    increase: "زيادة الكمية",
+    shipping: "الشحن",
+    atCheckout: "عند إتمام الطلب",
   },
 
   checkout: {

@@ -93,6 +93,11 @@ const en: Dictionary = {
     continueShopping: "Continue shopping",
     subtotal: "Subtotal",
     checkout: "Checkout",
+    remove: "Remove",
+    decrease: "Decrease quantity",
+    increase: "Increase quantity",
+    shipping: "Shipping",
+    atCheckout: "At checkout",
   },
 
   checkout: {

@@ -88,6 +88,11 @@ export interface Dictionary {
     continueShopping: string;
     subtotal: string;
     checkout: string;
+    remove: string;
+    decrease: string;
+    increase: string;
+    shipping: string;
+    atCheckout: string;
   };
 
   checkout: {
