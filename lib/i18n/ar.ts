@@ -103,6 +103,7 @@ const ar: Dictionary = {
     title: "إتمام الطلب",
     description: "أكمل بيانات الطلب وسنتواصل معك.",
     customerInfo: "بيانات العميل",
+    contactInfo: "بيانات التواصل",
     fullName: "الاسم بالكامل",
     phone: "رقم الهاتف",
     emailOptional: "البريد الإلكتروني اختياري",
