@@ -105,6 +105,7 @@ const en: Dictionary = {
     description: "Complete your order details and we will contact you.",
     customerInfo: "Customer information",
     contactInfo: "Contact information",
+    shipping: "Shipping information",
 
     name: "Full name",
     fullName: "Full name",

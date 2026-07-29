@@ -104,6 +104,7 @@ const ar: Dictionary = {
     description: "أكمل بيانات الطلب وسنتواصل معك.",
     customerInfo: "بيانات العميل",
     contactInfo: "بيانات التواصل",
+    shipping: "بيانات الشحن",
 
     name: "الاسم بالكامل",
     fullName: "الاسم بالكامل",

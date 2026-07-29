@@ -3,6 +3,7 @@ export interface Dictionary {
   tagline: string;
 
   nav: {
+    [key: string]: string;
     shop: string;
     about: string;
     contact: string;
@@ -11,6 +12,7 @@ export interface Dictionary {
   };
 
   common: {
+    [key: string]: string;
     view: string;
     save: string;
     saving: string;
@@ -58,6 +60,7 @@ export interface Dictionary {
   };
 
   home: {
+    [key: string]: string;
     heroKicker: string;
     heroTitle: string;
     heroDescription: string;
@@ -67,6 +70,7 @@ export interface Dictionary {
   };
 
   products: {
+    [key: string]: string;
     title: string;
     description: string;
     searchPlaceholder: string;
@@ -82,6 +86,7 @@ export interface Dictionary {
   };
 
   cart: {
+    [key: string]: string;
     title: string;
     empty: string;
     emptyDescription: string;
@@ -96,10 +101,13 @@ export interface Dictionary {
   };
 
   checkout: {
+    [key: string]: string;
+
     title: string;
     description: string;
     customerInfo: string;
     contactInfo: string;
+    shipping: string;
 
     name: string;
     fullName: string;
@@ -116,6 +124,7 @@ export interface Dictionary {
   };
 
   admin: {
+    [key: string]: string;
     title: string;
     dashboardDescription: string;
     ordersDescription: string;
