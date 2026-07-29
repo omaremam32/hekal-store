@@ -1,76 +1,127 @@
 export interface Dictionary {
   brand: string;
   tagline: string;
+
   nav: {
     shop: string;
     about: string;
     contact: string;
     cart: string;
+    admin: string;
   };
-  home: {
-    heroEyebrow: string;
-    heroTitle: string;
-    heroBody: string;
-    heroCta: string;
+
+  common: {
+    view: string;
+    save: string;
+    saving: string;
+    search: string;
+    filters: string;
+    clearFilters: string;
+    logout: string;
+
+    dashboard: string;
+    database: string;
+    orders: string;
+    products: string;
+    inventory: string;
+    customers: string;
+    reports: string;
+    backend: string;
+    store: string;
+    addProduct: string;
+
+    exportCsv: string;
+    active: string;
+    inactive: string;
     featured: string;
-    viewAll: string;
-  };
-  product: {
-    fabric: string;
+    pending: string;
+    confirmed: string;
+    shipped: string;
+    delivered: string;
+    cancelled: string;
+
+    total: string;
+    revenue: string;
+    stock: string;
+    lowStock: string;
+    outOfStock: string;
+    inStock: string;
+    price: string;
     size: string;
     color: string;
-    addToCart: string;
-    outOfStock: string;
-    selectOptions: string;
-    added: string;
-    inStock: (n: number) => string;
-  };
-  cart: {
-    title: string;
-    empty: string;
-    continueShopping: string;
-    subtotal: string;
-    checkout: string;
-    remove: string;
-    qty: string;
-  };
-  checkout: {
-    title: string;
-    contactInfo: string;
-    name: string;
+    quantity: string;
     phone: string;
     email: string;
-    shipping: string;
     address: string;
     city: string;
     governorate: string;
-    payment: string;
-    cod: string;
-    placeOrder: string;
-    placing: string;
-    orderSummary: string;
+  };
+
+  home: {
+    heroKicker: string;
+    heroTitle: string;
+    heroDescription: string;
+    shopNow: string;
+    featuredProducts: string;
+    featuredDescription: string;
+  };
+
+  products: {
+    title: string;
+    description: string;
+    searchPlaceholder: string;
+    category: string;
+    label: string;
+    all: string;
+    showing: string;
+    of: string;
+    product: string;
+    products: string;
+    noProducts: string;
+    noProductsDescription: string;
+  };
+
+  cart: {
+    title: string;
+    empty: string;
+    emptyDescription: string;
+    continueShopping: string;
     subtotal: string;
-    shippingNote: string;
+    checkout: string;
   };
-  checkoutSuccess: {
+
+  checkout: {
     title: string;
-    body: string;
-    orderRef: string;
-    backHome: string;
-  };
-  about: {
-    title: string;
-    body1: string;
-    body2: string;
-  };
-  contact: {
-    title: string;
-    address: string;
+    description: string;
+    customerInfo: string;
+    fullName: string;
     phone: string;
-    email: string;
-    whatsapp: string;
+    emailOptional: string;
+    address: string;
+    city: string;
+    governorate: string;
+    placeOrder: string;
+    placingOrder: string;
+    orderSummary: string;
   };
-  footer: {
-    rights: string;
+
+  admin: {
+    title: string;
+    dashboardDescription: string;
+    ordersDescription: string;
+    productsDescription: string;
+    databaseDescription: string;
+    customersDescription: string;
+    inventoryDescription: string;
+    reportsDescription: string;
+    backendDescription: string;
+    viewStore: string;
+    openOrders: string;
+    manageProducts: string;
+    openDatabase: string;
+    openCustomers: string;
+    openInventory: string;
+    openReports: string;
+    checkBackend: string;
   };
 }

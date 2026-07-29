@@ -1,56 +1,40 @@
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
-
-import { supabase } from "@/lib/supabaseClient";
+import HomeHero from "@/components/home/HomeHero";
+import ProductCatalog from "@/components/products/ProductCatalog";
+import { supabaseServer } from "@/lib/supabaseServer";
 import type { Product } from "@/lib/types";
-import StitchDivider from "@/components/StitchDivider";
-import HomeCopy from "@/components/home/HomeCopy";
-import ProductSection from "@/components/home/ProductSection";
-import Reveal from "@/components/Reveal";
 
-async function getFeaturedProducts(): Promise<Product[]> {
-  const { data, error } = await supabase
+export const revalidate = 60;
+
+async function getProducts(): Promise<Product[]> {
+  const { data, error } = await supabaseServer
     .from("products")
-    .select("*")
+    .select(
+      `
+      *,
+      product_variants (*)
+    `
+    )
     .eq("is_active", true)
     .order("created_at", { ascending: false });
 
   if (error) {
-    console.error("Error loading products:", error.message);
+    console.error("Failed to load products:", error.message);
     return [];
   }
 
-  return data ?? [];
+  return (data as Product[]) ?? [];
 }
 
 export default async function HomePage() {
-  const products = await getFeaturedProducts();
+  const products = await getProducts();
 
   return (
-    <div>
-      <section className="relative overflow-hidden bg-ink text-bone">
-        <div
-          aria-hidden
-          className="absolute inset-0 opacity-10"
-          style={{
-            backgroundImage:
-              "repeating-linear-gradient(90deg, currentColor 0 1px, transparent 1px 24px)",
-          }}
-        />
+    <>
+      <HomeHero />
 
-        <div className="absolute -left-20 top-16 h-72 w-72 rounded-full bg-thread/20 blur-3xl" />
-        <div className="absolute -right-20 bottom-10 h-80 w-80 rounded-full bg-brass/20 blur-3xl" />
-
-        <div className="relative mx-auto max-w-6xl px-5 py-24 sm:py-32">
-          <Reveal>
-            <HomeCopy />
-          </Reveal>
-        </div>
-
-        <StitchDivider className="h-3 w-full text-brass/70" />
+      <section id="catalog" className="mx-auto max-w-6xl px-5 py-14">
+        <ProductCatalog products={products} />
       </section>
-
-      <ProductSection products={products} />
-    </div>
+    </>
   );
 }
